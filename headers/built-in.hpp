@@ -52,6 +52,8 @@ static int (*builtin_func[]) (std::vector<std::string>&) =
     &myshell_time
 };
 
+static std::pair<std::string, std::string> last_pwds;
+
 // Returns the number of built-un functions
 int myshell_num_builtin(void);
 

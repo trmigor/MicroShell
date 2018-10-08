@@ -5,6 +5,7 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <iostream>
+#include <fstream>
 #include <vector>
 #include <string>
 #include <sstream>
@@ -12,34 +13,70 @@
 #include "../headers/built-in.hpp"
 #include "../headers/central.hpp"
 
+// The main loop
 int myshell_loop(void)
 {
     int status = 0;
     do
     {
-        Command cmd;
         char* buffer = getwd(nullptr);
         if (buffer == nullptr)
         {
-            perror("myshell");
+            perror("myshell_loop");
             return EXIT_FAILURE;
         }
         std::string path = buffer;
         int slash = path.find_last_of('/');
         path.erase(0, slash + 1);
         std::cout  << (path.empty() ? "[/" : "[") << path << "]" << (getuid() == 0 ? "! " : "> ");
-        cmd.ReadLine();
-        cmd.SplitLine();
-        status = cmd.Execute();
+        
+        std::string input;
+        std::getline(std::cin, input);
+
+        std::vector<std::string> diff_cmds;
+        int dash_position = input.find_first_of('|');
+        while(dash_position != std::string::npos)
+        {
+            diff_cmds.push_back(input.substr(0, dash_position));
+            input.erase(0, dash_position + 1);
+            dash_position = input.find_first_of('|');
+        }
+        diff_cmds.push_back(input);
+
+        for (int i = 0; i < diff_cmds.size(); i++)
+        {
+            if (i == 0 && diff_cmds.size() != 1)
+            {
+                diff_cmds[i] += " > pipe";
+            }
+            if (i == diff_cmds.size() - 1 && diff_cmds.size() != 1)
+            {
+                diff_cmds[i] += " < pipe";
+            }
+            if (i != 0 && i != diff_cmds.size() - 1)
+            {
+                diff_cmds[i] += " < pipe > pipe ";
+            }
+            Command cmd(diff_cmds[i]);
+            cmd.SplitLine();
+            status = cmd.Execute();
+        }
+
     }
-    while(status);
+    while(status != 0 && std::cin.eof() != 1);
+    if (std::cin.eof() == 1)
+    {
+        std::cout << std::endl;
+    }
     return EXIT_SUCCESS;
 }
 
-int myshell_launch(const std::vector<std::string>& arguments)
+// The external functions launch
+int myshell_launch(std::vector<std::string>& arguments)
 {
     pid_t pid, wpid;
     int status;
+
     std::vector<const char *> argv;
     for (int i = 0; i < arguments.size(); i++)
     {
@@ -50,16 +87,17 @@ int myshell_launch(const std::vector<std::string>& arguments)
     pid = fork();
     if (pid == 0)
     {
+        
         if (execvp(argv[0], (char * const *)&argv[0]) == -1)
         {
-            perror("myshell");
+            perror("myshell_launch");
         }
         exit(EXIT_FAILURE);
     }
     else
         if (pid < 0)
         {
-            perror("myshell");
+            perror("myshell_launch");
         }
         else
         {

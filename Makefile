@@ -1,4 +1,11 @@
+make:
+	make a.out -B -s
+
 a.out: main.o libmyshell.so
+	g++ -o a.out main.o -L. -lmyshell -Wl,-rpath,.
+	./a.out
+
+fast:
 	g++ -o a.out main.o -L. -lmyshell -Wl,-rpath,.
 	./a.out
 
@@ -17,9 +24,6 @@ realizations/built-in.o: realizations/built-in.cpp
 realizations/central.o: realizations/central.cpp
 	g++ -c -fPIC realizations/central.cpp -o realizations/central.o
 
-fullclean:
+clean:
 	rm -f *.o *.out *.so
 	rm -f realizations/*.o
-
-clean: 
-	rm -f *.o *.out

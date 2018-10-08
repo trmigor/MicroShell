@@ -11,6 +11,6 @@
 #include <sstream>
 
 int myshell_loop(void);
-int myshell_launch(const std::vector<std::string>& arguments);
+int myshell_launch(std::vector<std::string>& arguments);
 
 #endif

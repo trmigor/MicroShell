@@ -33,7 +33,7 @@ class Command
         // Reads the command line and saves in "cmd".
         void ReadLine(void);
 
-        // Splits the line into "arguments"
+        // Splits the line into "arguments" variable
         void SplitLine(void);
 
         // Executes the command

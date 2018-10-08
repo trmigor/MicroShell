@@ -46,7 +46,7 @@ void Command::ReadLine(void)
     std::getline(std::cin, cmd);
 }
 
-// Splits the line into "arguments"
+// Splits the line into "arguments" variable
 void Command::SplitLine(void)
 {
     std::string element;
