@@ -5,10 +5,6 @@ a.out: main.o libmyshell.so
 	g++ -o a.out main.o -L. -lmyshell -Wl,-rpath,.
 	./a.out
 
-fast:
-	g++ -o a.out main.o -L. -lmyshell -Wl,-rpath,.
-	./a.out
-
 main.o: main.cpp
 	g++ -c main.cpp
 
