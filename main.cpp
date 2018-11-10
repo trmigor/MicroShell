@@ -15,11 +15,22 @@
 
 int main(void)
 {
+
+    // Welcome message
+    std::cout << "MyShell\n";
+    std::cout << "Author: Igor Taraymovich\n\n";
+    std::cout << "Here is the list of built-in functions:\n";
+
+    for(int i = 0; i < myshell_num_builtin(); i++)
+    {
+        std::cout << " " << builtin_str[i] << " - " << builtin_descript[i] << std::endl;
+    }
+
     // IO file create
     int fd;
-    if ((fd = open("pipe", O_RDWR)) < 0)
+    /*if ((fd = open("pipe_itar_specialized_0001rdwr", O_RDWR)) < 0)
     {
-        if (mkfifo("pipe", 0777) < 0)
+        if (mkfifo("pipe_itar_specialized_0001rdwr", 0777) < 0)
         {
             perror("myshell_pipe_create");
         }
@@ -27,17 +38,17 @@ int main(void)
     else
     {
         close(fd);
-    }
+    }*/
 
     // The main loop
     int return_value = myshell_loop();
 
     // IO file remove
-    if ((fd = open("pipe", O_RDWR)) >= 0)
+    if ((fd = open("pipe_itar_specialized_0001rdwr", O_RDWR)) >= 0)
     {
-        if (remove("pipe") != 0 || close(fd) < 0)
+        if (remove("pipe_itar_specialized_0001rdwr") != 0 || close(fd) < 0)
         {
-            perror("myshell_pipe_close");
+            perror("myshell_pipe_remove");
         }
     }
 

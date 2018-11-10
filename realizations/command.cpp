@@ -55,6 +55,12 @@ void Command::SplitLine(void)
     {
         arguments.push_back(element);
     }
+
+    // Regular expressions
+    for (int i = 0; i < arguments.size(); i++)
+    {
+        
+    }
 }
 
 // Executes the command

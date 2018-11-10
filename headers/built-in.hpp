@@ -13,8 +13,6 @@
 // Built-in functions declaration
 // Quits the myshell
 int myshell_exit(std::vector<std::string>& arguments);
-// Shows the help message
-int myshell_help(std::vector<std::string>& arguments);
 // Shows current working directory
 int myshell_pwd(std::vector<std::string>& arguments);
 // Changes working directory
@@ -26,7 +24,6 @@ int myshell_time(std::vector<std::string>& arguments);
 static std::string builtin_str[] = 
 {
     "exit",
-    "help",
     "pwd",
     "cd",
     "time"
@@ -36,7 +33,6 @@ static std::string builtin_str[] =
 static std::string builtin_descript[] = 
 {
     "Quits the myshell",
-    "Shows the help message",
     "Shows current working directory",
     "Changes working directory",
     "Shows the time of executing"
@@ -46,7 +42,6 @@ static std::string builtin_descript[] =
 static int (*builtin_func[]) (std::vector<std::string>&) = 
 {
     &myshell_exit,
-    &myshell_help,
     &myshell_pwd,
     &myshell_cd,
     &myshell_time

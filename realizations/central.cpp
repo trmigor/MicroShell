@@ -47,15 +47,15 @@ int myshell_loop(void)
         {
             if (i == 0 && diff_cmds.size() != 1)
             {
-                diff_cmds[i] += " > pipe";
+                diff_cmds[i] += " > pipe_itar_specialized_0001rdwr ";
             }
             if (i == diff_cmds.size() - 1 && diff_cmds.size() != 1)
             {
-                diff_cmds[i] += " < pipe";
+                diff_cmds[i] += " < pipe_itar_specialized_0001rdwr ";
             }
             if (i != 0 && i != diff_cmds.size() - 1)
             {
-                diff_cmds[i] += " < pipe > pipe ";
+                diff_cmds[i] += " < pipe_itar_specialized_0001rdwr > pipe_itar_specialized_0001rdwr ";
             }
             Command cmd(diff_cmds[i]);
             cmd.SplitLine();
@@ -87,14 +87,34 @@ int myshell_launch(std::vector<std::string>& arguments)
     pid = fork();
     if (pid == 0)
     {
+        // IO redirection
+        for (int i = 0; i < arguments.size(); i++)
+        {
+            if (arguments[i] == ">")
+            {
+                close(STDOUT_FILENO);
+                open(arguments[i + 1].c_str(), O_WRONLY | O_CREAT, 0600);
+                argv.erase(argv.begin() + i, argv.begin() + i + 2);
+            }
+            if (arguments[i] == "<")
+            {
+                close(STDIN_FILENO);
+                open(arguments[i + 1].c_str(), O_RDONLY, 0600);
+                argv.erase(argv.begin() + i, argv.begin() + i + 2);
+            }
+        }
         
-        if (execvp(argv[0], (char * const *)&argv[0]) == -1)
+        if (execvp(argv[0], (char * const *)&argv[0]) < 0)
         {
             perror("myshell_launch");
         }
+        
+        close(STDIN_FILENO);
+        close(STDOUT_FILENO);
         exit(EXIT_FAILURE);
     }
     else
+    {
         if (pid < 0)
         {
             perror("myshell_launch");
@@ -107,6 +127,7 @@ int myshell_launch(std::vector<std::string>& arguments)
             }
             while (!WIFEXITED(status) && !WIFSIGNALED(status));
         }
-
+    }
+    
     return 1;
 }

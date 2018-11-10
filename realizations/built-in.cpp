@@ -12,7 +12,6 @@
 #include <sstream>
 #include "../headers/built-in.hpp"
 #include "../headers/command.hpp"
-#include "../headers/central.hpp"
 
 // Built-in functions realization
 // Quits the myshell
@@ -21,82 +20,54 @@ int myshell_exit(std::vector<std::string>& arguments)
     return 0;
 }
 
-// Shows the help message
-int myshell_help(std::vector<std::string>& arguments)
-{
-    std::streambuf *back_in = std::cin.rdbuf(),
-                    *back_out = std::cout.rdbuf();
-    std::ifstream input_file;
-    std::ofstream output_file;
-
-    // IO redirection
-    for (int i = 0; i < arguments.size(); i++)
-    {
-        if (arguments[i] == "<")
-        {
-            input_file.open(arguments[i + 1]);
-            std::cin.rdbuf(input_file.rdbuf());
-            arguments.erase(arguments.begin() + i, arguments.begin() + i + 2);
-        }
-        if (arguments[i] == ">")
-        {
-            output_file.open(arguments[i + 1]);
-            std::cout.rdbuf(output_file.rdbuf());
-            arguments.erase(arguments.begin() + i, arguments.begin() + i + 2);
-        }
-    }
-
-    std::cout << "MyShell\n";
-    std::cout << "Author: Igor Taraymovich\n\n";
-    std::cout << "Here is the list of built-in functions:\n";
-
-    for(int i = 0; i < myshell_num_builtin(); i++)
-    {
-        std::cout << " " << builtin_str[i] << " - " << builtin_descript[i] << std::endl;
-    }
-
-    std::cin.rdbuf(back_in);
-    std::cout.rdbuf(back_out);
-
-    return 1;
-}
-
 // Shows current working directory
 int myshell_pwd(std::vector<std::string>& arguments)
 {
-    std::streambuf *back_in = std::cin.rdbuf(),
-                    *back_out = std::cout.rdbuf();
-    std::ifstream input_file;
-    std::ofstream output_file;
 
-    // IO redirection
-    for (int i = 0; i < arguments.size(); i++)
+    pid_t pid, wpid;
+    int status;
+
+    pid = fork();
+    if (pid == 0)
     {
-        if (arguments[i] == "<")
+        // IO redirection
+        for (int i = 0; i < arguments.size(); i++)
         {
-            input_file.open(arguments[i + 1]);
-            std::cin.rdbuf(input_file.rdbuf());
-            arguments.erase(arguments.begin() + i, arguments.begin() + i + 2);
+            if (arguments[i] == ">")
+            {
+                close(STDOUT_FILENO);
+                int fd = open(arguments[i + 1].c_str(), O_WRONLY | O_CREAT, 0600);
+                arguments.erase(arguments.begin() + i, arguments.begin() + i + 2);
+            }
         }
-        if (arguments[i] == ">")
+
+        char * buffer = getwd(nullptr);
+        if (buffer == nullptr)
         {
-            output_file.open(arguments[i + 1]);
-            std::cout.rdbuf(output_file.rdbuf());
-            arguments.erase(arguments.begin() + i, arguments.begin() + i + 2);
+            perror("myshell_pwd");
+            return 1;
+        }
+        std::string path = buffer;
+        std::cout << path << std::endl;
+        
+        close(STDOUT_FILENO);
+        exit(EXIT_FAILURE);
+    }
+    else
+    {
+        if (pid < 0)
+        {
+            perror("myshell_pwd");
+        }
+        else
+        {
+            do
+            {
+                wpid = waitpid(pid, &status, WUNTRACED);
+            }
+            while (!WIFEXITED(status) && !WIFSIGNALED(status));
         }
     }
-
-    char * buffer = getwd(nullptr);
-    if (buffer == nullptr)
-    {
-        perror("myshell_pwd");
-        return 1;
-    }
-    std::string path = buffer;
-    std::cout << path << std::endl;
-
-    std::cin.rdbuf(back_in);
-    std::cout.rdbuf(back_out);
 
     return 1;
 }
@@ -129,34 +100,48 @@ int myshell_cd(std::vector<std::string>& arguments)
 // Shows the time of executing
 int myshell_time(std::vector<std::string>& arguments)
 {
-    std::streambuf *back_in = std::cin.rdbuf(),
-                    *back_out = std::cout.rdbuf();
-    std::ifstream input_file;
-    std::ofstream output_file;
-
-    // IO redirection
-    for (int i = 0; i < arguments.size(); i++)
-    {
-        if (arguments[i] == "<")
-        {
-            input_file.open(arguments[i + 1]);
-            std::cin.rdbuf(input_file.rdbuf());
-            arguments.erase(arguments.begin() + i, arguments.begin() + i + 2);
-        }
-        if (arguments[i] == ">")
-        {
-            output_file.open(arguments[i + 1]);
-            std::cout.rdbuf(output_file.rdbuf());
-            arguments.erase(arguments.begin() + i, arguments.begin() + i + 2);
-        }
-    }
 
     clock_t t = clock();
     Command cmd(arguments);
-    
-    std::cin.rdbuf(back_in);
-    std::cout.rdbuf(back_out);
 
+    pid_t pid, wpid;
+    int status;
+
+    pid = fork();
+    if (pid == 0)
+    {
+        // IO redirection
+        for (int i = 0; i < arguments.size(); i++)
+        {
+            if (arguments[i] == ">")
+            {
+                close(STDOUT_FILENO);
+                open(arguments[i + 1].c_str(), O_WRONLY | O_CREAT, 0600);
+                arguments.erase(arguments.begin() + i, arguments.begin() + i + 2);
+            }
+        }
+
+        //
+
+        close(STDOUT_FILENO);
+        exit(EXIT_FAILURE);
+    }
+    else
+    {
+        if (pid < 0)
+        {
+            perror("myshell_time");
+        }
+        else
+        {
+            do
+            {
+                wpid = waitpid(pid, &status, WUNTRACED);
+            }
+            while (!WIFEXITED(status) && !WIFSIGNALED(status));
+        }
+    }
+    
     return 1;
 }
 
