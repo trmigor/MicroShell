@@ -5,13 +5,17 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <time.h>
+#include <sys/times.h>
 #include <iostream>
 #include <fstream>
 #include <vector>
 #include <string>
 #include <sstream>
+#include <cmath>
+#include <iomanip>
 #include "../headers/built-in.hpp"
 #include "../headers/command.hpp"
+#include "../headers/central.hpp"
 
 // Built-in functions realization
 // Quits the myshell
@@ -36,8 +40,18 @@ int myshell_pwd(std::vector<std::string>& arguments)
             if (arguments[i] == ">")
             {
                 close(STDOUT_FILENO);
-                int fd = open(arguments[i + 1].c_str(), O_WRONLY | O_CREAT, 0600);
+                if (arguments[i + 1] != "pipe_itar_specialized_0001rdwr119638579")
+                {
+                    open(arguments[i + 1].c_str(), O_RDWR | O_CREAT | O_TRUNC, 0777);
+                }
+                else
+                {
+                    dup2(fd[1], 1);
+                    close(fd[1]);
+                    close(fd[0]);
+                }
                 arguments.erase(arguments.begin() + i, arguments.begin() + i + 2);
+                i--;
             }
         }
 
@@ -100,12 +114,27 @@ int myshell_cd(std::vector<std::string>& arguments)
 // Shows the time of executing
 int myshell_time(std::vector<std::string>& arguments)
 {
-
-    clock_t t = clock();
-    Command cmd(arguments);
-
     pid_t pid, wpid;
     int status;
+
+    arguments.erase(arguments.begin(), arguments.begin() + 1);
+
+    struct tms buf;
+    times(&buf);
+    clock_t t = clock();
+
+    Command cmd(arguments);
+    cmd.Execute();
+
+    t = clock() - t;
+    times(&buf);
+
+    double rm = floor(((double) t) / CLK_TCK / 60);
+    double rs = ((double) t) / CLK_TCK - rm * 60;
+    double um = floor((double) (buf.tms_utime + buf.tms_cutime) / sysconf(_SC_CLK_TCK) / 60);
+    double us = (double) (buf.tms_utime + buf.tms_cutime) / sysconf(_SC_CLK_TCK) - um * 60;
+    double sm = floor((double) (buf.tms_stime + buf.tms_cstime) / sysconf(_SC_CLK_TCK) / 60);
+    double ss = (double) (buf.tms_stime + buf.tms_cstime) / sysconf(_SC_CLK_TCK) - sm * 60;
 
     pid = fork();
     if (pid == 0)
@@ -116,12 +145,24 @@ int myshell_time(std::vector<std::string>& arguments)
             if (arguments[i] == ">")
             {
                 close(STDOUT_FILENO);
-                open(arguments[i + 1].c_str(), O_WRONLY | O_CREAT, 0600);
+                if (arguments[i + 1] != "pipe_itar_specialized_0001rdwr119638579")
+                {
+                    open(arguments[i + 1].c_str(), O_RDWR | O_CREAT | O_TRUNC, 0777);
+                }
+                else
+                {
+                    dup2(fd[1], STDOUT_FILENO);
+                    close(fd[1]);
+                    close(fd[0]);
+                }
                 arguments.erase(arguments.begin() + i, arguments.begin() + i + 2);
+                i--;
             }
         }
 
-        //
+        std::cout << "real: " << std::setiosflags(std::ios::fixed) << std::setprecision(0) << rm << "m" << std::setiosflags(std::ios::fixed) << std::setprecision(3) << rs << "s" << std::endl;
+        std::cout << "user: " << std::setiosflags(std::ios::fixed) << std::setprecision(0) << um << "m" << std::setiosflags(std::ios::fixed) << std::setprecision(3) << us << "s" << std::endl;
+        std::cout << "sys: " << std::setiosflags(std::ios::fixed) << std::setprecision(0) << sm << "m" << std::setiosflags(std::ios::fixed) << std::setprecision(3) << ss << "s" << std::endl;
 
         close(STDOUT_FILENO);
         exit(EXIT_FAILURE);

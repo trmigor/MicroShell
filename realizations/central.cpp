@@ -1,3 +1,4 @@
+#define _GNU_SOURCE
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/wait.h>
@@ -43,23 +44,35 @@ int myshell_loop(void)
         }
         diff_cmds.push_back(input);
 
+        if (pipe(fd) < 0)
+        {
+            perror("pipe");
+            return 1;
+        }
+
         for (int i = 0; i < diff_cmds.size(); i++)
         {
             if (i == 0 && diff_cmds.size() != 1)
             {
-                diff_cmds[i] += " > pipe_itar_specialized_0001rdwr ";
+                diff_cmds[i] += " > pipe_itar_specialized_0001rdwr119638579 ";
             }
             if (i == diff_cmds.size() - 1 && diff_cmds.size() != 1)
             {
-                diff_cmds[i] += " < pipe_itar_specialized_0001rdwr ";
+                diff_cmds[i] += " < pipe_itar_specialized_0001rdwr119638579 ";
             }
             if (i != 0 && i != diff_cmds.size() - 1)
             {
-                diff_cmds[i] += " < pipe_itar_specialized_0001rdwr > pipe_itar_specialized_0001rdwr ";
+                diff_cmds[i] += " < pipe_itar_specialized_0001rdwr119638579 > pipe_itar_specialized_0001rdwr119638579 ";
             }
             Command cmd(diff_cmds[i]);
-            cmd.SplitLine();
-            status = cmd.Execute();
+            if (cmd.SplitLine() < 0)
+            {
+                status = 1;
+            }
+            else
+            {
+                status = cmd.Execute();
+            }
         }
 
     }
@@ -93,22 +106,45 @@ int myshell_launch(std::vector<std::string>& arguments)
             if (arguments[i] == ">")
             {
                 close(STDOUT_FILENO);
-                open(arguments[i + 1].c_str(), O_WRONLY | O_CREAT, 0600);
+                if (arguments[i + 1] != "pipe_itar_specialized_0001rdwr119638579")
+                {
+                    open(arguments[i + 1].c_str(), O_RDWR | O_CREAT | O_TRUNC, 0777);
+                }
+                else
+                {
+                    dup2(fd[1], STDOUT_FILENO);
+                    close(fd[1]);
+                    close(fd[0]);
+                }
                 argv.erase(argv.begin() + i, argv.begin() + i + 2);
+                arguments.erase(arguments.begin() + i, arguments.begin() + i + 2);
+                i--;
             }
             if (arguments[i] == "<")
             {
                 close(STDIN_FILENO);
-                open(arguments[i + 1].c_str(), O_RDONLY, 0600);
+                if (arguments[i + 1] != "pipe_itar_specialized_0001rdwr119638579")
+                {
+                    open(arguments[i + 1].c_str(), O_RDWR);
+                }
+                else
+                {
+                    dup2(fd[0], STDIN_FILENO);
+                    close(fd[0]);
+                    close(fd[1]);
+                }
                 argv.erase(argv.begin() + i, argv.begin() + i + 2);
+                arguments.erase(arguments.begin() + i, arguments.begin() + i + 2);
+                i--;
             }
+
         }
         
         if (execvp(argv[0], (char * const *)&argv[0]) < 0)
         {
             perror("myshell_launch");
         }
-        
+
         close(STDIN_FILENO);
         close(STDOUT_FILENO);
         exit(EXIT_FAILURE);

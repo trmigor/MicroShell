@@ -34,7 +34,7 @@ class Command
         void ReadLine(void);
 
         // Splits the line into "arguments" variable
-        void SplitLine(void);
+        int SplitLine(void);
 
         // Executes the command
         int Execute(void);

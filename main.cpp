@@ -27,10 +27,10 @@ int main(void)
     }
 
     // IO file create
-    int fd;
-    /*if ((fd = open("pipe_itar_specialized_0001rdwr", O_RDWR)) < 0)
+    //int fd;
+    /*if ((fd = open("pipe_itar_specialized_0001rdwr119638579", O_RDWR)) < 0)
     {
-        if (mkfifo("pipe_itar_specialized_0001rdwr", 0777) < 0)
+        if (mkfifo("pipe_itar_specialized_0001rdwr119638579", 0777) < 0)
         {
             perror("myshell_pipe_create");
         }
@@ -43,14 +43,14 @@ int main(void)
     // The main loop
     int return_value = myshell_loop();
 
-    // IO file remove
-    if ((fd = open("pipe_itar_specialized_0001rdwr", O_RDWR)) >= 0)
+    /*// IO file remove
+    if ((fd = open("pipe_itar_specialized_0001rdwr119638579", O_RDWR)) >= 0)
     {
-        if (remove("pipe_itar_specialized_0001rdwr") != 0 || close(fd) < 0)
+        if (remove("pipe_itar_specialized_0001rdwr119638579") != 0 || close(fd) < 0)
         {
             perror("myshell_pipe_remove");
         }
-    }
+    }*/
 
     return return_value;
 }
