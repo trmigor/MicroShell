@@ -1,14 +1,7 @@
 #ifndef COMMAND_CLASS
 #define COMMAND_CLASS
-#include <unistd.h>
-#include <sys/types.h>
-#include <sys/wait.h>
-#include <stdlib.h>
-#include <errno.h>
-#include <iostream>
 #include <vector>
 #include <string>
-#include <sstream>
 
 class Command
 {

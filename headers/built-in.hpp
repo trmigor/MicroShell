@@ -1,14 +1,5 @@
 #ifndef BUILT_IN_FUNCTIONS
 #define BUILT_IN_FUNCTIONS
-#include <unistd.h>
-#include <sys/types.h>
-#include <sys/wait.h>
-#include <stdlib.h>
-#include <errno.h>
-#include <iostream>
-#include <vector>
-#include <string>
-#include <sstream>
 
 // Built-in functions declaration
 // Quits the myshell
@@ -46,8 +37,6 @@ static int (*builtin_func[]) (std::vector<std::string>&) =
     &myshell_cd,
     &myshell_time
 };
-
-static std::pair<std::string, std::string> last_pwds;
 
 // Returns the number of built-un functions
 int myshell_num_builtin(void);

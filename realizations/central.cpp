@@ -1,17 +1,8 @@
-#define _GNU_SOURCE
 #include <unistd.h>
-#include <sys/types.h>
-#include <sys/wait.h>
-#include <stdlib.h>
-#include <errno.h>
-#include <fcntl.h>
 #include <iostream>
-#include <fstream>
 #include <vector>
-#include <string>
-#include <sstream>
+#include <fcntl.h>
 #include "../headers/command.hpp"
-#include "../headers/built-in.hpp"
 #include "../headers/central.hpp"
 
 // The main loop
@@ -24,7 +15,6 @@ int myshell_loop(void)
         if (buffer == nullptr)
         {
             perror("myshell_loop");
-            return EXIT_FAILURE;
         }
         std::string path = buffer;
         int slash = path.find_last_of('/');
@@ -32,7 +22,14 @@ int myshell_loop(void)
         std::cout  << (path.empty() ? "[/" : "[") << path << "]" << (getuid() == 0 ? "! " : "> ");
         
         std::string input;
-        std::getline(std::cin, input);
+        try
+        {
+            std::getline(std::cin, input);
+        }
+        catch(std::ios_base::failure e)
+        {
+            std::cerr << "Can't get the line";
+        }
 
         std::vector<std::string> diff_cmds;
         int dash_position = input.find_first_of('|');

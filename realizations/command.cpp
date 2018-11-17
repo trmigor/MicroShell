@@ -1,17 +1,10 @@
-#include <unistd.h>
-#include <sys/types.h>
-#include <sys/wait.h>
-#include <stdlib.h>
-#include <errno.h>
-#include <fcntl.h>
 #include <dirent.h>
 #include <fnmatch.h>
 #include <sys/stat.h>
-#include <iostream>
 #include <vector>
 #include <string>
+#include <iostream>
 #include <sstream>
-#include <algorithm>
 #include "../headers/command.hpp"
 #include "../headers/built-in.hpp"
 #include "../headers/central.hpp"
@@ -63,13 +56,13 @@ int Command::SplitLine(void)
     // Regular expressions
     for (int i = 0; i < arguments.size(); i++)
     {
-        int star, quest;
+        unsigned long star = std::string::npos, quest = std::string::npos;
         if ((star = arguments[i].find_first_of('*')) != std::string::npos ||
                 (quest = arguments[i].find_first_of('?')) != std::string::npos)
         {
             std::string path;
             int slash;
-            if ((slash = arguments[i].find_last_of('/'), std::min(star, quest)) != std::string::npos)
+            if ((slash = arguments[i].find_last_of('/', std::min(star, quest))) != std::string::npos)
             {
                 path = arguments[i].substr(0, slash);
             }
