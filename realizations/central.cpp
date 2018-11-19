@@ -1,6 +1,5 @@
 #include <unistd.h>
 #include <iostream>
-#include <vector>
 #include <fcntl.h>
 #include "../headers/command.hpp"
 #include "../headers/central.hpp"
@@ -41,35 +40,45 @@ int myshell_loop(void)
         }
         diff_cmds.push_back(input);
 
-        if (pipe(fd) < 0)
+        int in = 0;
+        int fd[2];
+        // Conveyor
+        if (diff_cmds.size() > 1)
+            for (int i = 0; i < diff_cmds.size(); i++)
+            {
+                if(pipe(fd) < 0)
+                {
+                    perror("pipe creating");
+                }
+                int out = i == diff_cmds.size() - 1 ? 1 : fd[1];
+                Command cmd(in, out, diff_cmds[i]);
+                // Last command
+                if (cmd.SplitLine() < 0)
+                {
+                    status = 1;
+                }
+                else
+                {
+                    status = cmd.Execute();
+                }
+                if(close(fd[1]) < 0)
+                {
+                    perror("close");
+                }
+                in = fd[0];
+            }
+        // Without conveyor
+        else
         {
-            perror("pipe");
-            return 1;
-        }
-
-        for (int i = 0; i < diff_cmds.size(); i++)
-        {
-            if (i == 0 && diff_cmds.size() != 1)
-            {
-                diff_cmds[i] += " > pipe_itar_specialized_0001rdwr119638579 ";
-            }
-            if (i == diff_cmds.size() - 1 && diff_cmds.size() != 1)
-            {
-                diff_cmds[i] += " < pipe_itar_specialized_0001rdwr119638579 ";
-            }
-            if (i != 0 && i != diff_cmds.size() - 1)
-            {
-                diff_cmds[i] += " < pipe_itar_specialized_0001rdwr119638579 > pipe_itar_specialized_0001rdwr119638579 ";
-            }
-            Command cmd(diff_cmds[i]);
-            if (cmd.SplitLine() < 0)
-            {
-                status = 1;
-            }
-            else
-            {
-                status = cmd.Execute();
-            }
+            Command cmd(in, 1, diff_cmds[0]);
+                if (cmd.SplitLine() < 0)
+                {
+                    status = 1;
+                }
+                else
+                {
+                    status = cmd.Execute();
+                }
         }
 
     }
@@ -82,7 +91,7 @@ int myshell_loop(void)
 }
 
 // The external functions launch
-int myshell_launch(std::vector<std::string>& arguments)
+int myshell_launch(int in, int out, std::vector<std::string>& arguments)
 {
     pid_t pid, wpid;
     int status;
@@ -98,51 +107,32 @@ int myshell_launch(std::vector<std::string>& arguments)
     if (pid == 0)
     {
         // IO redirection
-        for (int i = 0; i < arguments.size(); i++)
+        if (in != 0)
         {
-            if (arguments[i] == ">")
+            if(dup2(in, 0) < 0)
             {
-                close(STDOUT_FILENO);
-                if (arguments[i + 1] != "pipe_itar_specialized_0001rdwr119638579")
-                {
-                    open(arguments[i + 1].c_str(), O_RDWR | O_CREAT | O_TRUNC, 0777);
-                }
-                else
-                {
-                    dup2(fd[1], STDOUT_FILENO);
-                    close(fd[1]);
-                    close(fd[0]);
-                }
-                argv.erase(argv.begin() + i, argv.begin() + i + 2);
-                arguments.erase(arguments.begin() + i, arguments.begin() + i + 2);
-                i--;
+                perror("input redirection");
             }
-            if (arguments[i] == "<")
+            if(close(in) < 0)
             {
-                close(STDIN_FILENO);
-                if (arguments[i + 1] != "pipe_itar_specialized_0001rdwr119638579")
-                {
-                    open(arguments[i + 1].c_str(), O_RDWR);
-                }
-                else
-                {
-                    dup2(fd[0], STDIN_FILENO);
-                    close(fd[0]);
-                    close(fd[1]);
-                }
-                argv.erase(argv.begin() + i, argv.begin() + i + 2);
-                arguments.erase(arguments.begin() + i, arguments.begin() + i + 2);
-                i--;
+                perror("close");
             }
-
+        }
+        if (out != 1)
+        {
+            if(dup2(out, 1) < 0)
+            {
+                perror("output redirection");
+            }
+            if(close(out) < 0)
+            {
+                perror("close");
+            }
         }
         
-        if (execvp(argv[0], (char * const *)&argv[0]) < 0)
-        {
-            perror("myshell_launch");
-        }
-
-        close(STDIN_FILENO);
+        execvp(argv[0], (char * const *)&argv[0]);
+        
+        perror("myshell_launch");
         close(STDOUT_FILENO);
         exit(EXIT_FAILURE);
     }
@@ -161,6 +151,5 @@ int myshell_launch(std::vector<std::string>& arguments)
             while (!WIFEXITED(status) && !WIFSIGNALED(status));
         }
     }
-    
     return 1;
 }

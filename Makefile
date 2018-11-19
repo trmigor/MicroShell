@@ -1,15 +1,12 @@
 make:
-	make a.out -B -s
+	make MyShell -B -s
 
-a.out: main.o libmyshell.so
-	g++ -o a.out main.o -L. -lmyshell -Wl,-rpath,.
-	./a.out
+MyShell: main.o realizations/command.o realizations/built-in.o realizations/central.o
+	g++ -o MyShell main.o realizations/command.o realizations/built-in.o realizations/central.o
+	./MyShell
 
 main.o: main.cpp
 	g++ -c main.cpp
-
-libmyshell.so: realizations/command.o realizations/built-in.o realizations/central.o
-	g++ -shared -o libmyshell.so realizations/command.o realizations/built-in.o realizations/central.o
 
 realizations/command.o: realizations/command.cpp
 	g++ -c -fPIC realizations/command.cpp -o realizations/command.o
@@ -21,5 +18,5 @@ realizations/central.o: realizations/central.cpp
 	g++ -c -fPIC realizations/central.cpp -o realizations/central.o
 
 clean:
-	rm -f *.o *.out *.so
+	rm -f *.o *.out MyShell
 	rm -f realizations/*.o

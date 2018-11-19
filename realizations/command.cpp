@@ -1,3 +1,4 @@
+#include <fcntl.h>
 #include <dirent.h>
 #include <fnmatch.h>
 #include <sys/stat.h>
@@ -12,17 +13,36 @@
 // Constructors
 Command::Command(void)
 {
-
+    in = 0;
+    out = 1;
 }
 
 Command::Command(std::string cmd)
 {
+    in = 0;
+    out = 1;
     this -> cmd = cmd;
 }
 
 Command::Command(std::vector<std::string> arguments)
 {
+    in = 0;
+    out = 1;
     this -> arguments = arguments;
+}
+
+Command::Command(int in, int out, std::string cmd)
+{
+    this -> cmd = cmd;
+    this -> in = in;
+    this -> out = out;
+}
+
+Command::Command(int in, int out, std::vector<std::string> arguments)
+{
+    this -> arguments = arguments;
+    this -> in = in;
+    this -> out = out;
 }
 
 // Getters
@@ -40,7 +60,14 @@ const std::vector<std::string>& Command::GetArgs(void)
 // Reads the command line and saves in "cmd".
 void Command::ReadLine(void)
 {
-    std::getline(std::cin, cmd);
+    try
+    {
+        std::getline(std::cin, cmd);
+    }
+    catch(std::ios_base::failure e)
+    {
+        std::cerr << "Can't get the line";
+    }
 }
 
 // Splits the line into "arguments" variable
@@ -51,6 +78,31 @@ int Command::SplitLine(void)
     while (s >> element)
     {
         arguments.push_back(element);
+    }
+
+    // IO redirection
+    for (int i = 0; i < arguments.size(); i++)
+    {
+        if(arguments[i] == "<")
+        {
+            in = open(arguments[i + 1].c_str(), O_RDONLY, 0777);
+            if (in < 0)
+            {
+                perror("input redirect");
+            }
+            arguments.erase(arguments.begin() + i, arguments.begin() + i + 2);
+            i--;
+        }
+        if(arguments[i] == ">")
+        {
+            out = open(arguments[i + 1].c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0777);
+            if (out < 0)
+            {
+                perror("output redirect");
+            }
+            arguments.erase(arguments.begin() + i, arguments.begin() + i + 2);
+            i--;
+        }
     }
 
     // Regular expressions
@@ -111,11 +163,11 @@ int Command::Execute(void)
     {
         if (arguments[0] == builtin_str[i])
         {
-            return (*builtin_func[i])(arguments);
+            return (*builtin_func[i])(in, out, arguments);
         }
     }
 
-    return myshell_launch(arguments);
+    return myshell_launch(in, out, arguments);
 }
 
 // Destructors
