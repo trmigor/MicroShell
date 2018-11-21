@@ -7,7 +7,7 @@ int main(void)
 {
 
     // Welcome message
-    std::cout << std::endl << "MyShell v0.2.0\n";
+    std::cout << std::endl << "MicroShell v0.2.0\n";
     std::cout << "Author: Igor Taraymovich\n\n";
     std::cout << "Here is the list of built-in functions:\n";
 

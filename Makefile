@@ -1,9 +1,9 @@
 make:
-	make MyShell -B -s
+	make MicroShell -B -s
 
-MyShell: main.o realizations/command.o realizations/built-in.o realizations/central.o
-	g++ -o MyShell main.o realizations/command.o realizations/built-in.o realizations/central.o
-	./MyShell
+MicroShell: main.o realizations/command.o realizations/built-in.o realizations/central.o
+	g++ -o MicroShell main.o realizations/command.o realizations/built-in.o realizations/central.o
+	./MicroShell
 
 main.o: main.cpp
 	g++ -c main.cpp
@@ -18,5 +18,5 @@ realizations/central.o: realizations/central.cpp
 	g++ -c -fPIC realizations/central.cpp -o realizations/central.o
 
 clean:
-	rm -f *.o *.out MyShell
+	rm -f *.o *.out MicroShell
 	rm -f realizations/*.o

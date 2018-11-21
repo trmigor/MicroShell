@@ -4,4 +4,4 @@ Author: Igor Taraymovich
 
 To compile, use $make
 
-For the fast launch of already compiled program use $./MyShell
+For the fast launch of already compiled program use $./MicroShell
