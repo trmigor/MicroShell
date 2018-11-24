@@ -40,7 +40,7 @@ int myshell_loop(void)
         }
         diff_cmds.push_back(input);
 
-        int in = 0;
+        int in = STDIN_FILENO;
         int fd[2];
         // Conveyor
         if (diff_cmds.size() > 1)
@@ -50,7 +50,7 @@ int myshell_loop(void)
                 {
                     perror("pipe creating");
                 }
-                int out = i == diff_cmds.size() - 1 ? 1 : fd[1];
+                int out = i == diff_cmds.size() - 1 ? STDOUT_FILENO : fd[1];
                 Command cmd(in, out, diff_cmds[i]);
                 // Last command
                 if (cmd.SplitLine() < 0)
@@ -70,7 +70,7 @@ int myshell_loop(void)
         // Without conveyor
         else
         {
-            Command cmd(in, 1, diff_cmds[0]);
+            Command cmd(in, STDOUT_FILENO, diff_cmds[0]);
                 if (cmd.SplitLine() < 0)
                 {
                     status = 1;
