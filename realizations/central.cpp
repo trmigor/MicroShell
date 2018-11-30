@@ -51,7 +51,7 @@ int myshell_loop(void)
                     perror("pipe creating");
                 }
                 int out = i == diff_cmds.size() - 1 ? STDOUT_FILENO : fd[1];
-                Command cmd(in, out, diff_cmds[i]);
+                Command cmd(in, out, true, diff_cmds[i]);
                 // Last command
                 if (cmd.SplitLine() < 0)
                 {
@@ -91,7 +91,7 @@ int myshell_loop(void)
 }
 
 // The external functions launch
-int myshell_launch(int in, int out, std::vector<std::string>& arguments)
+int myshell_launch(int in, int out, bool conv, std::vector<std::string>& arguments)
 {
     pid_t pid, wpid;
     int status;
@@ -144,11 +144,15 @@ int myshell_launch(int in, int out, std::vector<std::string>& arguments)
         }
         else
         {
-            do
+            if (out == STDOUT_FILENO || !conv)
             {
-                wpid = waitpid(pid, &status, WUNTRACED);
+                do
+                {
+                    wpid = waitpid(pid, &status, WUNTRACED);
+                }
+                while (!WIFEXITED(status) && !WIFSIGNALED(status));
             }
-            while (!WIFEXITED(status) && !WIFSIGNALED(status));
+            
         }
     }
     return 1;

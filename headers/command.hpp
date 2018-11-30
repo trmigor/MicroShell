@@ -10,14 +10,20 @@ class Command
         std::vector<std::string> arguments;
         int in;
         int out;
+        bool conv;
     public:
 
         // Constructors
         Command(void);
+        Command(bool conv);
         Command(std::string cmd);
+        Command(bool conv, std::string cmd);
         Command(std::vector<std::string> arguments);
+        Command(bool conv, std::vector<std::string> arguments);
         Command(int in, int out, std::string cmd);
+        Command(int in, int out, bool conv, std::string cmd);
         Command(int in, int out, std::vector<std::string> arguments);
+        Command(int in, int out, bool conv, std::vector<std::string> arguments);
 
         // Getters
         // Returns the command line

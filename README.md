@@ -1,4 +1,4 @@
-# MicroShell v0.2.0
+# MicroShell v0.2.3
 
 Author: Igor Taraymovich
 

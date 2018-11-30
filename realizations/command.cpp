@@ -13,12 +13,29 @@
 // Constructors
 Command::Command(void)
 {
+    conv = false;
+    in = 0;
+    out = 1;
+}
+
+Command::Command(bool conv)
+{
+    this -> conv = conv;
     in = 0;
     out = 1;
 }
 
 Command::Command(std::string cmd)
 {
+    conv = false;
+    in = 0;
+    out = 1;
+    this -> cmd = cmd;
+}
+
+Command::Command(bool conv, std::string cmd)
+{
+    this -> conv = conv;
     in = 0;
     out = 1;
     this -> cmd = cmd;
@@ -26,6 +43,15 @@ Command::Command(std::string cmd)
 
 Command::Command(std::vector<std::string> arguments)
 {
+    conv = false;
+    in = 0;
+    out = 1;
+    this -> arguments = arguments;
+}
+
+Command::Command(bool conv, std::vector<std::string> arguments)
+{
+    this -> conv = conv;
     in = 0;
     out = 1;
     this -> arguments = arguments;
@@ -33,6 +59,15 @@ Command::Command(std::vector<std::string> arguments)
 
 Command::Command(int in, int out, std::string cmd)
 {
+    conv = false;
+    this -> cmd = cmd;
+    this -> in = in;
+    this -> out = out;
+}
+
+Command::Command(int in, int out, bool conv, std::string cmd)
+{
+    this -> conv = conv;
     this -> cmd = cmd;
     this -> in = in;
     this -> out = out;
@@ -40,6 +75,15 @@ Command::Command(int in, int out, std::string cmd)
 
 Command::Command(int in, int out, std::vector<std::string> arguments)
 {
+    conv = false;
+    this -> arguments = arguments;
+    this -> in = in;
+    this -> out = out;
+}
+
+Command::Command(int in, int out, bool conv, std::vector<std::string> arguments)
+{
+    this -> conv = conv;
     this -> arguments = arguments;
     this -> in = in;
     this -> out = out;
@@ -163,11 +207,11 @@ int Command::Execute(void)
     {
         if (arguments[0] == builtin_str[i])
         {
-            return (*builtin_func[i])(in, out, arguments);
+            return (*builtin_func[i])(in, out, conv, arguments);
         }
     }
 
-    return myshell_launch(in, out, arguments);
+    return myshell_launch(in, out, conv, arguments);
 }
 
 // Destructors

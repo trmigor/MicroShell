@@ -2,6 +2,6 @@
 #define CENTRAL
 
 int myshell_loop(void);
-int myshell_launch(int in, int out, std::vector<std::string>& arguments);
+int myshell_launch(int in, int out, bool conv, std::vector<std::string>& arguments);
 
 #endif

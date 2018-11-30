@@ -12,13 +12,13 @@
 
 // Built-in functions realization
 // Quits the myshell
-int myshell_exit(int in, int out, std::vector<std::string>& arguments)
+int myshell_exit(int in, int out, bool conv, std::vector<std::string>& arguments)
 {
     return 0;
 }
 
 // Shows current working directory
-int myshell_pwd(int in, int out, std::vector<std::string>& arguments)
+int myshell_pwd(int in, int out, bool conv, std::vector<std::string>& arguments)
 {
 
     pid_t pid, wpid;
@@ -60,11 +60,14 @@ int myshell_pwd(int in, int out, std::vector<std::string>& arguments)
         }
         else
         {
-            do
+            if (out == STDOUT_FILENO || !conv)
             {
-                wpid = waitpid(pid, &status, WUNTRACED);
+                do
+                {
+                    wpid = waitpid(pid, &status, WUNTRACED);
+                }
+                while (!WIFEXITED(status) && !WIFSIGNALED(status));
             }
-            while (!WIFEXITED(status) && !WIFSIGNALED(status));
         }
     }
 
@@ -72,7 +75,7 @@ int myshell_pwd(int in, int out, std::vector<std::string>& arguments)
 }
 
 // Changes working directory
-int myshell_cd(int in, int out, std::vector<std::string>& arguments)
+int myshell_cd(int in, int out, bool conv, std::vector<std::string>& arguments)
 {
     if (arguments.size() < 2)
     {
@@ -97,7 +100,7 @@ int myshell_cd(int in, int out, std::vector<std::string>& arguments)
 }
 
 // Shows the time of executing
-int myshell_time(int in, int out, std::vector<std::string>& arguments)
+int myshell_time(int in, int out, bool conv, std::vector<std::string>& arguments)
 {
     arguments.erase(arguments.begin(), arguments.begin() + 1);
 
@@ -105,7 +108,7 @@ int myshell_time(int in, int out, std::vector<std::string>& arguments)
     times(&buf);
     clock_t t = clock();
 
-    Command cmd(arguments);
+    Command cmd(conv, arguments);
     cmd.Execute();
 
     t = clock() - t;

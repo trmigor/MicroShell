@@ -3,13 +3,13 @@
 
 // Built-in functions declaration
 // Quits the myshell
-int myshell_exit(int in, int out, std::vector<std::string>& arguments);
+int myshell_exit(int in, int out, bool conv, std::vector<std::string>& arguments);
 // Shows current working directory
-int myshell_pwd(int in, int out, std::vector<std::string>& arguments);
+int myshell_pwd(int in, int out, bool conv, std::vector<std::string>& arguments);
 // Changes working directory
-int myshell_cd(int in, int out, std::vector<std::string>& arguments);
+int myshell_cd(int in, int out, bool conv, std::vector<std::string>& arguments);
 // Shows the time of executing
-int myshell_time(int in, int out, std::vector<std::string>& arguments);
+int myshell_time(int in, int out, bool conv, std::vector<std::string>& arguments);
 
 // Built-in functions name list
 static std::string builtin_str[] = 
@@ -30,7 +30,7 @@ static std::string builtin_descript[] =
 };
 
 // Built-in functions list
-static int (*builtin_func[]) (int, int, std::vector<std::string>&) = 
+static int (*builtin_func[]) (int, int, bool, std::vector<std::string>&) = 
 {
     &myshell_exit,
     &myshell_pwd,
