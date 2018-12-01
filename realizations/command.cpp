@@ -172,6 +172,7 @@ int Command::SplitLine(void)
                 perror(path.c_str());
                 return -1;
             }
+            bool p = false;
             if (S_ISDIR(st.st_mode))
             {
                 DIR * d = opendir(path.c_str());
@@ -182,14 +183,20 @@ int Command::SplitLine(void)
                 }
                 for (dirent *de = readdir(d); de != nullptr; de = readdir(d))
                 {
+                    if (std::string(de -> d_name) == ".")
+                        continue; 
+                    if (std::string(de -> d_name) == "..")
+                        continue;
                     std::string fname = (path != "." ? (path + "/") : "") + de -> d_name;
                     if (fnmatch(arguments[i].c_str(), fname.c_str(), FNM_PATHNAME) == 0)
                     {
                         arguments.insert(arguments.begin() + i + 1, fname);
+                        p = true;
                     }
                 }
             }
-            arguments.erase(arguments.begin() + i, arguments.begin() + i + 1);
+            if (p)
+                arguments.erase(arguments.begin() + i, arguments.begin() + i + 1);
         }
     }
     return 0;
