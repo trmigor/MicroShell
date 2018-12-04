@@ -1,8 +1,29 @@
 #include <unistd.h>
-#include <iostream>
 #include <fcntl.h>
+#include <iostream>
 #include "../headers/command.hpp"
 #include "../headers/central.hpp"
+
+// The interrupt handler
+void signal_handler(int signal)
+{
+    std::cout << std::endl;
+    invite();
+}
+
+// Enter invitation
+void invite(void)
+{
+    char* buffer = getwd(nullptr);
+    if (buffer == nullptr)
+    {
+        perror("myshell_loop");
+    }
+    std::string path = buffer;
+    int slash = path.find_last_of('/');
+    path.erase(0, slash + 1);
+    std::cout << (path.empty() ? "[/" : "[") << path << "]" << (getuid() == 0 ? "! " : "> ") << std::flush;
+}
 
 // The main loop
 int myshell_loop(void)
@@ -10,16 +31,7 @@ int myshell_loop(void)
     int status = 0;
     do
     {
-        char* buffer = getwd(nullptr);
-        if (buffer == nullptr)
-        {
-            perror("myshell_loop");
-        }
-        std::string path = buffer;
-        int slash = path.find_last_of('/');
-        path.erase(0, slash + 1);
-        std::cout  << (path.empty() ? "[/" : "[") << path << "]" << (getuid() == 0 ? "! " : "> ");
-        
+        invite();
         std::string input;
         try
         {
@@ -44,11 +56,12 @@ int myshell_loop(void)
         int fd[2];
         // Conveyor
         if (diff_cmds.size() > 1)
+        {
             for (int i = 0; i < diff_cmds.size(); i++)
             {
                 if(pipe(fd) < 0)
                 {
-                    perror("pipe creating");
+                    perror("pipe");
                 }
                 int out = i == diff_cmds.size() - 1 ? STDOUT_FILENO : fd[1];
                 Command cmd(in, out, true, diff_cmds[i]);
@@ -67,26 +80,29 @@ int myshell_loop(void)
                 }
                 in = fd[0];
             }
+        }
         // Without conveyor
         else
         {
             Command cmd(in, STDOUT_FILENO, diff_cmds[0]);
-                if (cmd.SplitLine() < 0)
-                {
-                    status = 1;
-                }
-                else
-                {
-                    status = cmd.Execute();
-                }
+            if (cmd.SplitLine() < 0)
+            {
+                status = 1;
+            }
+            else
+            {
+                status = cmd.Execute();
+            }
         }
 
     }
     while(status != 0 && std::cin.eof() != 1);
+
     if (std::cin.eof() == 1)
     {
         std::cout << std::endl;
     }
+
     return EXIT_SUCCESS;
 }
 
@@ -132,7 +148,7 @@ int myshell_launch(int in, int out, bool conv, std::vector<std::string>& argumen
         
         execvp(argv[0], (char * const *)&argv[0]);
         
-        perror("myshell_launch");
+        perror("myshell_launch: exec");
         close(STDOUT_FILENO);
         exit(EXIT_FAILURE);
     }
@@ -140,7 +156,7 @@ int myshell_launch(int in, int out, bool conv, std::vector<std::string>& argumen
     {
         if (pid < 0)
         {
-            perror("myshell_launch");
+            perror("myshell_launch: fork");
         }
         else
         {

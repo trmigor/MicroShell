@@ -1,3 +1,4 @@
+#include <csignal>
 #include <iostream>
 #include "headers/command.hpp"
 #include "headers/built-in.hpp"
@@ -5,6 +6,7 @@
 
 int main(void)
 {
+    std::signal(SIGINT, signal_handler);
 
     // Welcome message
     std::cout << std::endl << "MicroShell v0.2.3\n";

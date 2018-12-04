@@ -1,7 +1,5 @@
 #include <fcntl.h>
 #include <glob.h>
-#include <dirent.h>
-#include <sys/stat.h>
 #include <vector>
 #include <string>
 #include <iostream>
@@ -175,9 +173,7 @@ std::vector<std::string> Command::Glob(const std::string& pattern)
     if (return_value != 0)
     {
         globfree(&glob_result);
-        std::stringstream ss;
-        ss << "glob() failed with return_value " << return_value << std::endl;
-        throw std::runtime_error(ss.str());
+        std::cout << "glob() failed with return_value " << return_value << std::endl;
     }
 
     std::vector<std::string> filenames;

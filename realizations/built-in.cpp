@@ -1,11 +1,11 @@
+#include <sys/times.h>
 #include <unistd.h>
+#include <fcntl.h>
+#include <cmath>
 #include <iostream>
+#include <iomanip>
 #include <vector>
 #include <sstream>
-#include <fcntl.h>
-#include <sys/times.h>
-#include <cmath>
-#include <iomanip>
 #include "../headers/built-in.hpp"
 #include "../headers/command.hpp"
 #include "../headers/central.hpp"
@@ -43,7 +43,7 @@ int myshell_pwd(int in, int out, bool conv, std::vector<std::string>& arguments)
         char * buffer = getwd(nullptr);
         if (buffer == nullptr)
         {
-            perror("myshell_pwd");
+            perror("myshell_pwd: getwd");
             return 1;
         }
         std::string path = buffer;
@@ -56,7 +56,7 @@ int myshell_pwd(int in, int out, bool conv, std::vector<std::string>& arguments)
     {
         if (pid < 0)
         {
-            perror("myshell_pwd");
+            perror("myshell_pwd: fork");
         }
         else
         {
@@ -86,14 +86,14 @@ int myshell_cd(int in, int out, bool conv, std::vector<std::string>& arguments)
         }
         if (chdir(getenv("HOME")) != 0)
         {
-            perror("myshell_cd");
+            perror("myshell_cd: chdir");
         }
     }
     else
     {
         if (chdir(arguments[1].c_str()) != 0)
         {
-            perror("myshell_cd");
+            perror("myshell_cd: chdir");
         }
     }
     return 1;
@@ -105,14 +105,22 @@ int myshell_time(int in, int out, bool conv, std::vector<std::string>& arguments
     arguments.erase(arguments.begin(), arguments.begin() + 1);
 
     struct tms buf;
-    times(&buf);
+    if (times(&buf) == (clock_t) - 1)
+    {
+        perror("myshell_time: times");
+        return 1;
+    }
     clock_t t = clock();
 
     Command cmd(conv, arguments);
     cmd.Execute();
 
     t = clock() - t;
-    times(&buf);
+    if (times(&buf) == (clock_t) - 1)
+    {
+        perror("myshell_time: times");
+        return 1;
+    }
 
     // Real minutes
     double rm = floor(((double) t) * 1000 / CLOCKS_PER_SEC / 60);
