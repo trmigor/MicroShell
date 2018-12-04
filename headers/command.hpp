@@ -37,6 +37,9 @@ class Command
         // Splits the line into "arguments" variable
         int SplitLine(void);
 
+        // Regular expressions parse
+        std::vector<std::string> Glob(const std::string& pattern);
+
         // Executes the command
         int Execute(void);
 

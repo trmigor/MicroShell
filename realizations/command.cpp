@@ -1,6 +1,6 @@
 #include <fcntl.h>
+#include <glob.h>
 #include <dirent.h>
-#include <fnmatch.h>
 #include <sys/stat.h>
 #include <vector>
 #include <string>
@@ -153,53 +153,42 @@ int Command::SplitLine(void)
     for (int i = 0; i < arguments.size(); i++)
     {
         unsigned long star = std::string::npos, quest = std::string::npos;
-        if ((star = arguments[i].find_first_of('*')) != std::string::npos ||
-                (quest = arguments[i].find_first_of('?')) != std::string::npos)
+        if (arguments[i].find_first_of('*') != std::string::npos ||
+                arguments[i].find_first_of('?') != std::string::npos ||
+                arguments[i].find_first_of('~') != std::string::npos)
         {
-            std::string path;
-            int slash;
-            if ((slash = arguments[i].find_last_of('/', std::min(star, quest))) != std::string::npos)
-            {
-                path = arguments[i].substr(0, slash);
-            }
-            else
-            {
-                path = ".";
-            }
-            struct stat st;
-            if(stat(path.c_str(), &st) < 0)
-            {
-                perror(path.c_str());
-                return -1;
-            }
-            bool p = false;
-            if (S_ISDIR(st.st_mode))
-            {
-                DIR * d = opendir(path.c_str());
-                if (d == nullptr)
-                {
-                    perror(path.c_str());
-                    return -1;
-                }
-                for (dirent *de = readdir(d); de != nullptr; de = readdir(d))
-                {
-                    if (std::string(de -> d_name) == ".")
-                        continue; 
-                    if (std::string(de -> d_name) == "..")
-                        continue;
-                    std::string fname = (path != "." ? (path + "/") : "") + de -> d_name;
-                    if (fnmatch(arguments[i].c_str(), fname.c_str(), FNM_PATHNAME) == 0)
-                    {
-                        arguments.insert(arguments.begin() + i + 1, fname);
-                        p = true;
-                    }
-                }
-            }
-            if (p)
-                arguments.erase(arguments.begin() + i, arguments.begin() + i + 1);
+            std::vector<std::string> glob = Glob(arguments[i]);
+            arguments.erase(arguments.begin() + i, arguments.begin() + i + 1);
+            arguments.insert(arguments.begin() + i, glob.begin(), glob.end());
         }
     }
     return 0;
+}
+
+// Regular expressions parse
+std::vector<std::string> Command::Glob(const std::string& pattern)
+{
+    glob_t glob_result;
+    memset(&glob_result, 0, sizeof(glob_result));
+
+    int return_value = glob(pattern.c_str(), GLOB_TILDE, nullptr, &glob_result);
+    if (return_value != 0)
+    {
+        globfree(&glob_result);
+        std::stringstream ss;
+        ss << "glob() failed with return_value " << return_value << std::endl;
+        throw std::runtime_error(ss.str());
+    }
+
+    std::vector<std::string> filenames;
+    for (int i = 0; i < glob_result.gl_pathc; i++)
+    {
+        filenames.push_back(std::string(glob_result.gl_pathv[i]));
+    }
+
+    globfree(&glob_result);
+
+    return filenames;
 }
 
 // Executes the command
