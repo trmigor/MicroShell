@@ -3,7 +3,6 @@ make:
 
 MicroShell: main.o realizations/command.o realizations/built-in.o realizations/central.o
 	g++ -o MicroShell main.o realizations/command.o realizations/built-in.o realizations/central.o
-	./MicroShell
 
 main.o: main.cpp
 	g++ -c main.cpp
