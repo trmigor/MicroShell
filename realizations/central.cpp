@@ -4,11 +4,16 @@
 #include "../headers/command.hpp"
 #include "../headers/central.hpp"
 
+static bool main_proc = true;
+
 // The interrupt handler
 void signal_handler(int signal)
 {
     std::cout << std::endl;
-    invite();
+    if (main_proc)
+    {
+        invite();
+    }
 }
 
 // Enter invitation
@@ -41,7 +46,7 @@ int myshell_loop(void)
         {
             std::cerr << "Can't get the line";
         }
-
+        main_proc = false;
         std::vector<std::string> diff_cmds;
         int dash_position = input.find_first_of('|');
         while(dash_position != std::string::npos)
@@ -94,7 +99,7 @@ int myshell_loop(void)
                 status = cmd.Execute();
             }
         }
-
+        main_proc = true;
     }
     while(status != 0 && std::cin.eof() != 1);
 
