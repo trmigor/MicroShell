@@ -9,9 +9,9 @@ static bool main_proc = true;
 // The interrupt handler
 void signal_handler(int signal)
 {
-    std::cout << std::endl;
     if (main_proc)
     {
+        std::cout << std::endl;
         invite();
     }
 }
