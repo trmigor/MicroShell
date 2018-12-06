@@ -1,3 +1,4 @@
+#include <unistd.h>
 #include <csignal>
 #include <iostream>
 #include "headers/command.hpp"
@@ -6,6 +7,7 @@
 
 int main(void)
 {
+    // Signal redirection
     std::signal(SIGINT, signal_handler);
 
     // Welcome message

@@ -1,5 +1,8 @@
 #ifndef CENTRAL
 #define CENTRAL
+#include <string>
+
+static std::string directory_history;
 
 // The interrupt handler
 void signal_handler(int signal);

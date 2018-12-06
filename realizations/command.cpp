@@ -177,7 +177,7 @@ std::vector<std::string> Command::Glob(const std::string& pattern)
     if (return_value != 0 && return_value != GLOB_NOMATCH)
     {
         globfree(&glob_result);
-        std::cout << "glob() failed with return_value " << return_value << std::endl;
+        std::cerr << "glob() failed with return_value " << return_value << std::endl;
     }
 
     std::vector<std::string> filenames;

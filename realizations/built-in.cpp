@@ -77,7 +77,13 @@ int myshell_pwd(int in, int out, bool conv, std::vector<std::string>& arguments)
 // Changes working directory
 int myshell_cd(int in, int out, bool conv, std::vector<std::string>& arguments)
 {
-    if (arguments.size() < 2)
+    char* buffer = getwd(nullptr);
+    if (buffer == nullptr)
+    {
+        perror("myshell_loop");
+    }
+
+    if (arguments.size() < 2 || arguments[1] == "--")
     {
         if (getenv("HOME") == nullptr)
         {
@@ -88,12 +94,25 @@ int myshell_cd(int in, int out, bool conv, std::vector<std::string>& arguments)
         {
             perror("myshell_cd: chdir");
         }
+        else
+        {
+            directory_history = buffer;
+        }
     }
     else
     {
+        if (arguments[1] == "-")
+        {
+            arguments[1] = directory_history;
+        }
+
         if (chdir(arguments[1].c_str()) != 0)
         {
             perror("myshell_cd: chdir");
+        }
+        else
+        {
+            directory_history = buffer;
         }
     }
     return 1;
