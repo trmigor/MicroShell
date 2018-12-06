@@ -156,6 +156,10 @@ int Command::SplitLine(void)
                 arguments[i].find_first_of('~') != std::string::npos)
         {
             std::vector<std::string> glob = Glob(arguments[i]);
+            if (glob.size() == 0)
+            {
+                return -1;
+            }
             arguments.erase(arguments.begin() + i, arguments.begin() + i + 1);
             arguments.insert(arguments.begin() + i, glob.begin(), glob.end());
         }
@@ -170,7 +174,7 @@ std::vector<std::string> Command::Glob(const std::string& pattern)
     memset(&glob_result, 0, sizeof(glob_result));
 
     int return_value = glob(pattern.c_str(), GLOB_TILDE, nullptr, &glob_result);
-    if (return_value != 0)
+    if (return_value != 0 && return_value != GLOB_NOMATCH)
     {
         globfree(&glob_result);
         std::cout << "glob() failed with return_value " << return_value << std::endl;
