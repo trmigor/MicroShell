@@ -1,7 +1,20 @@
-# MicroShell v0.3.0
+# MicroShell
 
-Author: Igor Taraymovich
+Custom shell. Project for computer science classes in Moscow Institute of Physics and Technologies.
 
-To compile, use $make
+## Getting Started
 
-For the launch of already compiled program use $./MicroShell
+To compile, use
+
+```
+$ make
+```
+
+To run, use
+
+```
+$ ./MicroShell
+```
+## Author
+
+* **Igor Taraymovich** - [trmigor](https://github.com/trmigor)
